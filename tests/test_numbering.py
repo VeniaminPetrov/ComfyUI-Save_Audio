@@ -166,8 +166,17 @@ def main():
     d = tempfile.mkdtemp(prefix="num8_")
     node.save_audio(make_audio(peak=1.5), d, "", "out", "", "zero-padded", 3, "44100", "32-bit float", False)
     p = os.path.join(d, "out_001.wav")
-    with wave.open(p, "rb") as w:
-        assert w.getsampwidth() == 4, f"expected 32-bit (float) wav, got {w.getsampwidth()*8}-bit"
+    # The stdlib wave module cannot READ IEEE-float (format 3) files, so verify
+    # the fmt chunk manually: audio format must be 3 and sample width 4 bytes.
+    import struct
+    with open(p, "rb") as f:
+        hdr = f.read(12)
+        assert hdr[:4] == b"RIFF" and hdr[8:12] == b"WAVE", "not a RIFF/WAVE file"
+        fmt_id = f.read(4); assert fmt_id == b"fmt ", "missing fmt chunk"
+        (fmt_len,) = struct.unpack("<I", f.read(4))
+        (audio_format, nch, sr_fmt, byte_rate, block_align, bits) = struct.unpack("<HHIIHH", f.read(16))
+    assert audio_format == 3 and bits == 32 and nch == 1, \
+        f"expected IEEE-float 32-bit mono, got fmt={audio_format} bits={bits} ch={nch}"
     from scipy.io.wavfile import read as _rd
     sr_read, data = _rd(p)
     check("32-bit float mode writes a readable float wav", np.issubdtype(data.dtype, np.floating), str(data.dtype))
