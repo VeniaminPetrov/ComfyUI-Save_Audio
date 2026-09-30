@@ -222,4 +222,4 @@ class SaveAudioWithPathNumbered:
 
 # Dictionary mappings for ComfyUI
 NODE_CLASS_MAPPINGS = {"SaveAudioWithPathNumbered": SaveAudioWithPathNumbered}
-NODE_DISPLAY_NAME_MAPPINGS = {"SaveAudioWithPathNumbered": "Save Audio With Path (Numbered)"}
+NODE_DISPLAY_NAME_MAPPINGS = {"SaveAudioWithPathNumbered": "Save Audio With Path (Ven_ic)"}
